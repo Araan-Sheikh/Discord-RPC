@@ -9,7 +9,7 @@ const CONFIG = {
     app: 'ACCID', // Updated application ID
     spotify: 'spotifyid',
     credits: Buffer.from('QVJBQk4gU0hFSUtI', 'base64').toString('utf-8'),
-    version: '1.0.0'
+    version: '1.2.0'
 };
 
 // Global State Management
@@ -26,15 +26,15 @@ const STATUS_CONFIG = {
             name: 'VALORANT',
             details: 'Competitive',
             state: 'In Game',
-            largeImageKey: 'valorant',
-            smallImageKey: 'valorant_small'
+            largeImageKey: 'mp:external/valorant',
+            smallImageKey: 'mp:external/valorant_small'
         },
         minecraft: { 
             name: 'Minecraft',
             details: 'Survival Mode',
             state: 'Building',
-            largeImageKey: 'minecraft',
-            smallImageKey: 'minecraft_small'
+            largeImageKey: 'mp:external/minecraft',
+            smallImageKey: 'mp:external/minecraft_small'
         }
     },
     tournamentGames: ['Valorant', 'Fortnite', 'CSGO', 'League of Legends'],
@@ -46,11 +46,11 @@ const STATUS_CONFIG = {
         emojis: ['🎮', '🎯', '🏆', '⚔️', '🔥', '💫', '✨', '🌟']
     },
     defaultImages: {
-        valorant: 'https://i.imgur.com/rqXHyI7.png',
-        minecraft: 'https://i.imgur.com/Qz6LmHK.png',
-        fortnite: 'https://i.imgur.com/TgZuCnp.png',
-        csgo: 'https://i.imgur.com/ZWKi5Ue.png',
-        default: 'https://i.imgur.com/f2G2qF9.png'
+        valorant: 'mp:external/valorant',
+        minecraft: 'mp:external/minecraft',
+        fortnite: 'mp:external/fortnite',
+        csgo: 'mp:external/csgo',
+        default: 'mp:external/default'
     }
 };
 
@@ -108,7 +108,7 @@ client.on('messageCreate', async message => {
     switch (command) {
         case 'game':
             try {
-                const [gameName, gameDetails, imageUrl] = args.join(' ').split('|').map(s => s.trim());
+                const [gameName, gameDetails] = args.join(' ').split('|').map(s => s.trim());
                 
                 if (!gameName) {
                     await Helpers.sendTemp(message, '❌ Please provide a game name!');
@@ -122,13 +122,12 @@ client.on('messageCreate', async message => {
                     details: gameDetails || 'Playing',
                     state: 'In Game',
                     assets: {
-                        large_image: imageUrl || STATUS_CONFIG.defaultImages[gameName.toLowerCase()] || STATUS_CONFIG.defaultImages.default,
+                        large_image: 'mp:external/default',
                         large_text: gameName,
-                        small_image: STATUS_CONFIG.defaultImages.default,
+                        small_image: 'mp:external/default',
                         small_text: 'Playing'
                     },
-                    timestamps: { start: Date.now() },
-                    flags: 1 << 0
+                    timestamps: { start: Date.now() }
                 };
 
                 await client.user.setActivity(presence);
@@ -136,12 +135,11 @@ client.on('messageCreate', async message => {
                 await Helpers.sendTemp(message, `
 **🎮 Game Status Set**
 Game: ${gameName}
-${gameDetails ? `Details: ${gameDetails}` : ''}
-${imageUrl ? `Image: Custom` : 'Image: Default'}`);
+${gameDetails ? `Details: ${gameDetails}` : ''}`);
 
             } catch (error) {
                 console.error('Error:', error);
-                await Helpers.sendTemp(message, '❌ Error setting game status.');
+                await Helpers.sendTemp(message, '❌ Error setting game status. Please try again.');
             }
             break;
 
@@ -607,7 +605,7 @@ ${details.length ? `Details: ${details.join(' | ')}` : ''}`);
                     }, 10000); // Changes every 10 seconds
 
                     await Helpers.sendTemp(message, `
-**���� Random Status Rotation Enabled**
+**🎲 Random Status Rotation Enabled**
 • Changes every 10 seconds
 • Use \`${CONFIG.prefix}random\` to disable
 • Use \`${CONFIG.prefix}clear\` to stop`);
@@ -625,39 +623,11 @@ ${details.length ? `Details: ${details.join(' | ')}` : ''}`);
 
         case 'image':
             try {
-                const [imageUrl] = args;
-                if (!imageUrl) {
-                    await Helpers.sendTemp(message, '❌ Please provide an image URL!');
-                    return;
-                }
-
-                const presence = {
-                    application_id: CONFIG.app,
-                    type: 'PLAYING',
-                    name: 'Custom Image',
-                    state: 'Image Test',
-                    details: 'Custom Image Active',
-                    assets: {
-                        large_image: `attachment://${imageUrl}`,  // Using attachment:// protocol
-                        large_text: 'Custom Image',
-                        small_image: STATUS_CONFIG.defaultImages.default,
-                        small_text: 'Testing'
-                    },
-                    timestamps: { start: Date.now() },
-                    instance: true,
-                    flags: 1 << 0
-                };
-
-                await client.user.setActivity(presence);
-                await Helpers.sendTemp(message, `
-**🖼️ Custom Image Set**
-URL: ${imageUrl}
-
-The image should now be visible in your status!`);
-
+                await Helpers.sendTemp(message, '❌ Custom image uploads are currently not supported. Please use the preset games or contact the developer for custom asset uploads.');
+                return;
             } catch (error) {
                 console.error('Error:', error);
-                await Helpers.sendTemp(message, '❌ Error setting image. Make sure the URL is valid and accessible.');
+                await Helpers.sendTemp(message, '❌ Error processing command.');
             }
             break;
 
